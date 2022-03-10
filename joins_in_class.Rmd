@@ -327,7 +327,7 @@ top_dest <- flights %>%
   count(dest, sort = TRUE) %>%
   head(10)
 top_dest
-
+View(airlines)
 ```
 
 Now you want to find each flight that went to one of those destinations. You could, of course, filter. But! Now you can semi-join: 
@@ -339,5 +339,8 @@ flights %>%
 
 
 What does anti_join(flights, airports, by = c("dest" = "faa")) tell you? What does anti_join(airports, flights, by = c("faa" = "dest")) tell you?
+
+Anti_join(flights, airports, by = c("dest" = "faa")) should give us the flights that do not have a destination and anti_join(airports, flights, by = c("faa" = "dest")) should give us the airports that do not have flights coming in to them.
+
 
 

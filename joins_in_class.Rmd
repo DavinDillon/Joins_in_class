@@ -1,0 +1,343 @@
+---
+title: "Joins"
+author: "Davin Dillon"
+date: "DATA 2401"
+output:
+  slidy_presentation: default
+  pdf_document: default
+  html_document: default
+---
+
+```{r, echo = F, message = F}
+library(tidyverse, warn.conflicts = F)
+```
+
+# Joins
+
+Sometimes you store data in different dataframes. Consider: you're a charity, and you have one data frame for donations, and one for email and phone number of your donors.
+
+- This helps with data storage: If you store every donation with the email and phone number, you're wasting space. 
+
+- This helps with data updating: If you need to update a donor's phone number, you only have to do it in one spot, not on every row of donations they've done. 
+
+*Those of you who have worked in SQL, this type of thinking should look familiar.* 
+
+--- 
+
+So, how do we do this? 
+
+You join data through data that is in both datasets: you need a way to tell the program how to join them. 
+
+You identify columns that are in both tables, then use these columns to "match" the corresponding rows. 
+
+---
+
+So, suppose we have this table of donations: 
+
+|Name| Amount | Date |
+| --- | --- | --- 
+| Sam | 100 | 2/12/2019 |
+| Phil | 50 | 2/12/2019 | 
+| Alice | 100 | 4/23/2019 |
+| Phil | 50 | 5/17/2019 |
+| Maria | 100 | 6/7/2019 |
+| Susanne | 50 | 7/2/2019 |
+
+And this table of donors: 
+
+|Name| Email |
+| --- | --- 
+| Sam | sam\@gmail.com 
+| Alice | aliceemail\@gmail.com
+| Susanne | susanneroks\@gmail.com
+| Phil | phillip\@hotmail.com
+| Mary | mary\@gmail.com
+
+
+We would want to use "Name" to identify which rows correspond to each other in the table. 
+
+
+Now, how does R decide which order they go in and what gets left in or left out? You need to specify which type of join you want. 
+
+
+---
+
+## Types of Joins
+
+There are two main types of joins, mutating joins and filtering joins. 
+
+- Mutating joins add all the columns from one table to the other, combining the variables. 
+
+- Filtering joins only take the variables from the first table, but filter the rows based on whether or not that row is present in the second table. 
+
+--- 
+
+### Mutating Joins 
+
+The first kind of join combines variables from both data frames. 
+
+
+Straight from the R documentation: 
+
+- `left_join(x, y, by = )`: return all rows from x, and all columns from x and y. Rows in x with no match in y will have NA values in the new columns. If there are multiple matches between x and y, all combinations of the matches are returned.
+
+- `right_join(x, y, by = )`: return all rows from y, and all columns from x and y. Rows in y with no match in x will have NA values in the new columns. If there are multiple matches between x and y, all combinations of the matches are returned.
+
+- `inner_join(x, y, by = )`: return all rows from x where there are matching values in y, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned.
+
+- `full_join(x, y, by = )`:return all rows and all columns from both x and y. Where there are not matching values, returns NA for the one missing.
+
+How are these different?
+
+---
+
+
+
+And again with some simple data. *This data is from the join chapter on stat545.com, linked later in the notes. *
+
+At each step, note what variables and rows appear. 
+
+*Note:* I don't specify which key/identifier variable to use, so R finds variables with the  same names and matches using them. (It prints out what it uses so I can make sure it guessed right.)
+
+```{r}
+# make tibbles of data manually
+
+superheroes <- tibble::tribble(
+       ~name, ~alignment,  ~gender,          ~publisher,
+   "Magneto",      "bad",   "male",            "Marvel",
+     "Storm",     "good", "female",            "Marvel",
+  "Mystique",      "bad", "female",            "Marvel",
+    "Batman",     "good",   "male",                "DC",
+     "Joker",      "bad",   "male",                "DC",
+  "Catwoman",      "bad", "female",                "DC",
+   "Hellboy",     "good",   "male", "Dark Horse Comics"
+  )
+
+
+publishers <- tibble::tribble(
+  ~publisher, ~yr_founded,
+        "DC",       1934L,
+    "Marvel",       1939L,
+     "Image",       1992L
+  )
+
+superheroes
+publishers
+```
+
+---
+
+Inner join: Return all rows from x where there are matching values in y, and all columns from x and y.
+
+What is missing? Why? 
+
+```{r, message = F}
+inner_join(superheroes, publishers)
+```
+
+Think: how will `inner_join(publishers, superheroes)` be different? 
+
+---
+
+
+```{r}
+library(tidyverse)
+inner_join(publishers, superheroes)
+```
+
+---
+
+Left join: Return all rows from x, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned. 
+
+```{r}
+left_join(superheroes, publishers)
+```
+
+---
+
+Right join: Return all rows from y, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned. 
+
+*Note:* Not often used. This is the same as `left_join(publishers, superheroes)`
+
+```{r}
+right_join(superheroes, publishers)
+```
+
+--- 
+
+Full join: Return all rows and all columns from both x and y. Where there are not matching values, returns NA for the one missing
+
+```{r}
+full_join(superheroes, publishers)
+```
+
+
+---
+
+### Filtering Joins 
+
+Filtering joins keep just the cases from the first data frame, but filters using the second. 
+
+- `semi_join(x, y, by = )`: return all rows from x where there are matching values in y, keeping just columns from x.
+
+- `anti_join(x, y, by = )`: return all rows from x where there are not matching values in y, keeping just columns from x.
+
+---
+
+Semi join:  Return all rows from x where there are matching values in y, keeping just columns from x. 
+
+```{r}
+semi_join(superheroes, publishers)
+```
+
+How is this different than the result from inner_join(superheroes, publishers)?
+
+How will this compare to `semi_join(publishers, superheroes)`?
+
+---
+
+```{r}
+semi_join(publishers, superheroes)
+```
+
+---
+
+Anti join: Return all rows from x where there are not matching values in y, keeping just columns from x
+
+```{r}
+anti_join(superheroes, publishers)
+```
+
+
+I also highly suggest you read through Chapter 11 of our textbook, or Chapter 13 of R for Data Science:  https://r4ds.had.co.nz/relational-data.html
+or this lecture from Jenny Bryan: https://stat545.com/join-cheatsheet.html
+
+---
+
+# Examples 
+
+`band_members` and `band_instruments` are two data sets inside R that show these joins pretty well
+
+```{R}
+band_members
+band_instruments
+```
+
+Looking at the two datasets above, convince yourself what each of the different joins below will give you. Once you do so, change `eval = F` to `eval = T`
+```{R, eval = T}
+inner_join(band_members, band_instruments)
+full_join(band_members, band_instruments)
+left_join(band_members, band_instruments)
+right_join(band_members, band_instruments)
+```
+
+```{r, eval = F}
+semi_join(band_members, band_instruments)
+anti_join(band_members, band_instruments)
+
+semi_join(band_instruments, band_members)
+anti_join(band_instruments, band_members)
+```
+
+
+---
+
+
+
+**Practice: **
+
+Load the `"nycflights13"` package.  You'll also need to load `dplyr` or `tidyverse`, if you didn't above.
+
+```{r}
+library(tidyverse)
+#install.packages("nycflights13")
+library(nycflights13)
+my_flights <- flights # store my own version
+my_flights <- na.omit(my_flights) ## this dataset has data on cancelled flights too, 
+                                  ## so we 'll remove those for now
+head(my_flights)
+View(my_flights)
+View(planes)
+```
+
+
+Create a dataframe of the average arrival delays for each _destination_
+
+```{r}
+avg_delay_df <- my_flights %>% 
+  group_by(dest) %>%
+  summarize(avg_del = mean(arr_delay)) %>% 
+  arrange(-avg_del)
+avg_delay_df  <- rename(avg_delay_df, 'faa' = 'dest')
+avg_delay_df
+```
+
+Then use `left_join()` to join on the "airports" dataframe, which has the airport information.
+
+```{r}
+adel <- left_join(avg_delay_df, airports, by = 'faa')
+```
+
+
+Note here: the column names don't match anymore! 
+
+Which airport had the largest average arrival delay?
+
+```{r}
+avg_delay_df %>% 
+  arrange(-avg_del)
+```
+
+```{r}
+dep_del_df <- left_join(airlines, my_flights) %>% 
+  group_by(name) %>% 
+  summarize(avg_dep_del = mean(dep_delay)) %>% 
+  arrange(avg_dep_del)
+dep_del_df
+
+```
+
+
+---
+
+Which airline had the smallest average departure delay?
+
+To answer this, you need to create a dataframe of the average departure delay for each _airline_, then use `left_join()` to join on the "airlines" dataframe
+
+ - Create a dataframe of the average departure delay for each _airline_
+ - use `left_join()` to join on the "airlines" dataframe
+ - use slice_???() to find the result you need
+
+
+
+
+```{r}
+
+View(dep_del_df)
+left_join(airlines, dep_del_df) %>% 
+  arrange(avg_dep_del)
+```
+
+
+Examples from R4DS:    
+
+```{r}
+
+top_dest <- flights %>%
+  count(dest, sort = TRUE) %>%
+  head(10)
+top_dest
+
+```
+
+Now you want to find each flight that went to one of those destinations. You could, of course, filter. But! Now you can semi-join: 
+
+```{r}
+flights %>% 
+  semi_join(top_dest)
+```
+
+
+What does anti_join(flights, airports, by = c("dest" = "faa")) tell you? What does anti_join(airports, flights, by = c("faa" = "dest")) tell you?
+
+

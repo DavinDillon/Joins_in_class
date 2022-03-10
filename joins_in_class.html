@@ -642,9 +642,10 @@ Davin Dillon
 ##  8 FLL   12055
 ##  9 MIA   11728
 ## 10 DCA    9705</code></pre>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">View</span>(airlines)</span></code></pre></div>
 <p>Now you want to find each flight that went to one of those destinations. You could, of course, filter. But! Now you can semi-join:</p>
-<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>flights <span class="sc">%&gt;%</span> </span>
-<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(top_dest)</span></code></pre></div>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>flights <span class="sc">%&gt;%</span> </span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(top_dest)</span></code></pre></div>
 <pre><code>## Joining, by = &quot;dest&quot;</code></pre>
 <pre><code>## # A tibble: 141,145 x 19
 ##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
@@ -663,6 +664,39 @@ Davin Dillon
 ## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
 ## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <p>What does anti_join(flights, airports, by = c(“dest” = “faa”)) tell you? What does anti_join(airports, flights, by = c(“faa” = “dest”)) tell you?</p>
+<p>Anti_join(flights, airports, by = c(“dest” = “faa”)) should give us the flights that do not have a destination and anti_join(airports, flights, by = c(“faa” = “dest”)) should give us the airports that do not have flights coming in to them.</p>
+<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anti_join</span>(flights, airports, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;dest&quot;</span> <span class="ot">=</span> <span class="st">&quot;faa&quot;</span>))</span></code></pre></div>
+<pre><code>## # A tibble: 7,602 x 19
+##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
+##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
+##  1  2013     1     1      544            545        -1     1004           1022
+##  2  2013     1     1      615            615         0     1039           1100
+##  3  2013     1     1      628            630        -2     1137           1140
+##  4  2013     1     1      701            700         1     1123           1154
+##  5  2013     1     1      711            715        -4     1151           1206
+##  6  2013     1     1      820            820         0     1254           1310
+##  7  2013     1     1      820            820         0     1249           1329
+##  8  2013     1     1      840            845        -5     1311           1350
+##  9  2013     1     1      909            810        59     1331           1315
+## 10  2013     1     1      913            918        -5     1346           1416
+## # ... with 7,592 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
+## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
+## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anti_join</span>(airports, flights, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;faa&quot;</span> <span class="ot">=</span> <span class="st">&quot;dest&quot;</span>)) </span></code></pre></div>
+<pre><code>## # A tibble: 1,357 x 8
+##    faa   name                             lat    lon   alt    tz dst   tzone    
+##    &lt;chr&gt; &lt;chr&gt;                          &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;    
+##  1 04G   Lansdowne Airport               41.1  -80.6  1044    -5 A     America/~
+##  2 06A   Moton Field Municipal Airport   32.5  -85.7   264    -6 A     America/~
+##  3 06C   Schaumburg Regional             42.0  -88.1   801    -6 A     America/~
+##  4 06N   Randall Airport                 41.4  -74.4   523    -5 A     America/~
+##  5 09J   Jekyll Island Airport           31.1  -81.4    11    -5 A     America/~
+##  6 0A9   Elizabethton Municipal Airport  36.4  -82.2  1593    -5 A     America/~
+##  7 0G6   Williams County Airport         41.5  -84.5   730    -5 A     America/~
+##  8 0G7   Finger Lakes Regional Airport   42.9  -76.8   492    -5 A     America/~
+##  9 0P2   Shoestring Aviation Airfield    39.8  -76.6  1000    -5 U     America/~
+## 10 0S9   Jefferson County Intl           48.1 -123.    108    -8 A     America/~
+## # ... with 1,347 more rows</code></pre>
 </div>
 
   <!-- dynamically load mathjax for compatibility with self-contained -->

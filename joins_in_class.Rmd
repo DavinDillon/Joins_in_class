@@ -341,6 +341,12 @@ flights %>%
 What does anti_join(flights, airports, by = c("dest" = "faa")) tell you? What does anti_join(airports, flights, by = c("faa" = "dest")) tell you?
 
 Anti_join(flights, airports, by = c("dest" = "faa")) should give us the flights that do not have a destination and anti_join(airports, flights, by = c("faa" = "dest")) should give us the airports that do not have flights coming in to them.
+```{r}
+anti_join(flights, airports, by = c("dest" = "faa"))
 
+```
+``` {r}
+anti_join(airports, flights, by = c("faa" = "dest")) 
 
+```
 
